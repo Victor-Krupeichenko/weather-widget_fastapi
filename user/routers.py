@@ -9,7 +9,7 @@ from user.utils import valid_field
 from passlib.hash import pbkdf2_sha256
 from user.get_token import write_token_to_cookie
 from setting_env import name_cookies
-from current_user import get_current_user
+from user.current_user import get_current_user
 
 user_router = APIRouter(prefix="/user", tags=["user"])
 
