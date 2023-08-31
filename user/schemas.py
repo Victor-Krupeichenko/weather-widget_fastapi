@@ -8,7 +8,6 @@ class UserRegisterScheme(BaseModel):
     """
     Схема валидации при регистрации пользователя
     """
-    
     username: str
     email: str
     password: SecretStr
