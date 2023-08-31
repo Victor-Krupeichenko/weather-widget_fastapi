@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from user.routers import user_router
+from weather.routers import weather_router
 
 app = FastAPI(
     title="Погода",
@@ -11,3 +12,4 @@ app = FastAPI(
     }
 )
 app.include_router(user_router)
+app.include_router(weather_router)
