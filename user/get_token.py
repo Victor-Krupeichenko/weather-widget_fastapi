@@ -21,10 +21,18 @@ async def write_token_to_cookie(username, response: Response):
     """
     Записывает токен в cookies
     :param username: имя пользователя
-    :param response: объект HTTP запроса
+    :param response: объект HTTP ответа
     :return: токен
     """
 
     jwt_token = create_success_token(data={"username": username})
     response.set_cookie(key=name_cookies, value=f"Bearer {jwt_token}", httponly=True)
     return jwt_token
+
+
+async def delete_token_to_cookies(response: Response):
+    """
+    Удаляет токен из cookies
+    :param response: объект HTTP ответа
+    """
+    response.delete_cookie(key=name_cookies)
