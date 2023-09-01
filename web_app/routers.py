@@ -1,7 +1,7 @@
 from app_database.connect_database import get_async_session
 from app_database.utils import object_exists_from_database
 from app_database.models import User
-from user.schemas import UserRegisterScheme
+from user.schemas import UserRegisterScheme, UserLoginScheme
 from fastapi import APIRouter, Request, status, HTTPException, Depends, responses
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -11,6 +11,8 @@ from weather._weather import return_weather
 from web_app.forms import model_fields_for_the_form
 from web_app.csrf_token import generate_csrf_token, verify_csrf_token
 from web_app.web_utils import valid_form, templates_error
+from passlib.hash import pbkdf2_sha256
+from user.get_token import write_token_to_cookie
 
 web_router = APIRouter(include_in_schema=False)
 
@@ -99,3 +101,51 @@ async def web_user_register(request: Request, db_session: AsyncSession = Depends
         redirect_url = web_router.url_path_for("get_weather_web")
         request.session["messages"] = f"пользователь {form_data.get('username')} зарегистрирован"
         return responses.RedirectResponse(redirect_url, status_code=status.HTTP_302_FOUND)
+
+
+@web_router.api_route("/user-login", methods=["GET", "POST"])
+async def web_user_login(request: Request, db_session: AsyncSession = Depends(get_async_session)):
+    """
+    Авторизация пользователя
+    :param request: текущий HTTP запрос
+    :param db_session: асинхронная сессия для подключения к базе данных
+    :return: если GET-запрос рендеринг html-формы, если POST-запрос валидация полей формы,
+    если все проверки прошли успешно то авторизовавшись, перенаправляется на другую страницу
+    """
+    form = model_fields_for_the_form(UserLoginScheme)
+    csrf_token = await generate_csrf_token(request)
+    html_template = "user_register_or_user_login.html"
+    flag = "login"
+    if request.method == "GET":
+        return templates.TemplateResponse(
+            html_template, status_code=status.HTTP_200_OK, context={
+                "request": request, "form": form, "csrf_token": csrf_token, "flag": flag
+            }
+        )
+    elif request.method == "POST":
+        form_data = await request.form()
+        results = await valid_form(UserLoginScheme, dict(form_data))
+        if isinstance(results, list):  # Если в форме есть ошибки (ошибки хранятся в списке)
+            csrf_token = await generate_csrf_token(request)
+            error_list = results
+            return templates_error(templates, html_template, request, csrf_token, form, error_list, flag)
+
+        # проверка находится ли пользователь в базе
+        query = select(User).where(User.username == results.username)
+        get_user = await object_exists_from_database(query, db_session)
+        if not get_user:
+            csrf_token = await generate_csrf_token(request)
+            error_list = [f"пользователя: {results.username} не существует"]
+            return templates_error(templates, html_template, request, csrf_token, form, error_list, flag)
+
+        # проверка пароля
+        if not pbkdf2_sha256.verify(results.password, get_user.hashed_password):
+            csrf_token = await generate_csrf_token(request)
+            error_list = ["неверный пароль, попробуй снова"]
+            return templates_error(templates, html_template, request, csrf_token, form, error_list, flag)
+
+        request.session["messages"] = f"пользователь {results.username} авторизован"
+        redirect_url = web_router.url_path_for("get_weather_web")
+        response = responses.RedirectResponse(redirect_url, status_code=status.HTTP_302_FOUND)
+        await write_token_to_cookie(results.username, response)  # сохранение токена в cookies
+        return response
