@@ -43,7 +43,7 @@ async def user_login(user: UserLoginScheme, response: Response, session: AsyncSe
     """
     Endpoint для авторизации пользователя
     :param user: логин и пароль которые ввел пользователь
-    :param response: объект HTTP запроса
+    :param response: объект HTTP ответа
     :param session: асинхронная сессия для подключения к базе данных
     :return: имя пользователя и токен
     """
@@ -65,7 +65,7 @@ async def user_login(user: UserLoginScheme, response: Response, session: AsyncSe
 async def user_logout(response: Response, current_user=Depends(get_current_user)):
     """
     Endpoint для выхода пользователя
-    :param response: объект HTTP запроса
+    :param response: объект HTTP ответа
     :param current_user: текущий пользователь
     :return: сообщение для пользователя, что он вышел
     """
