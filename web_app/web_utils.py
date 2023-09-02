@@ -34,3 +34,25 @@ def templates_error(templates, html_template, request, csrf_token, form, errors_
             "csrf_token": csrf_token, "form": form, "flag": flag
         }
     )
+
+
+async def get_weather_list(data):
+    """
+    Получает из объекта только погоду
+    :param data: список объектов
+    :return: список содержащий только погоду
+    """
+    weather_list = list()
+    for i in data:
+        weather_list.append(i.weather.strip("{}").split(","))
+    return weather_list
+
+
+def format_time(value, format_date="%d/%m/%Y %H:%M:%S"):
+    """
+    Фильтр для форматирования строки с датой в html-шаблоне
+    :param value: значение для которого применяется фильтр
+    :param format_date: формат в котором будет выводиться дата
+    :return: значение с уже примененным фильтром
+    """
+    return value.strftime(format_date)
