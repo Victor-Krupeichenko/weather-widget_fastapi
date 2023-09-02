@@ -1,0 +1,33 @@
+version: "3.7"
+services:
+  weather_database:
+    image: postgres:15.3
+    container_name: weather_database
+    command: -p 1223
+    restart: always
+    expose:
+      - 1223
+    env_file:
+      - .env
+    networks:
+      - weather_fastapi
+
+  weather_app:
+    build:
+      context: .
+    env_file:
+      - .env
+    container_name: weather_app
+    command: [ "/weather_app/start_docker/start.sh" ]
+    ports:
+      - "7654:8000"
+    restart: always
+    depends_on:
+      - weather_database
+    networks:
+      - weather_fastapi
+
+networks:
+  weather_fastapi:
+    name: weather_fastapi
+    driver: bridge
