@@ -1,0 +1,24 @@
+<form action="" method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <label class="form-control shadow-lg p-3 mb-2 bg-body-tertiary rounded">
+        {% for field in form %}
+            {% if field.title in ["password", "password_confirm"] %}
+                <input type="password" name="{{ field.title }}"
+                       placeholder="{{ field.title|title }}:" {{ field.required }}
+                       class="form-control mb-3">
+            {% else %}
+                <input type="text" name="{{ field.title }}" placeholder="{{ field.title|title }}:" {{ field.required }}
+                       class="form-control mb-3">
+            {% endif %}
+        {% endfor %}
+        <div class="d-grid gap-2 mt-2">
+            {% if flag == "register" %}
+                <button type="submit" class="btn btn-primary btn-block btn-sm">Зарегистрироваться</button>
+                {% elif flag == "login" %}
+                 <button type="submit" class="btn btn-primary btn-block btn-sm">Авторизоваться</button>
+            {% else %}
+                <button type="submit" class="btn btn-primary btn-block btn-sm">Посмотреть погоду</button>
+            {% endif %}
+        </div>
+    </label>
+</form>
