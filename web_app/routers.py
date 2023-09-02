@@ -179,8 +179,11 @@ async def web_user_logout(request: Request, current_user=Depends(get_current_use
     :return: удаляет токен из cookies и перенаправляет пользователя на главную страницу
     """
 
-    request.session["messages"] = f"{current_user.username} вышел"
     url_redirect = web_router.url_path_for("get_weather_web")
+    if not current_user:
+        request.session["messages"] = "чтобы выйти нужно сначала авторизоваться"
+        return responses.RedirectResponse(url_redirect, status_code=status.HTTP_302_FOUND)
+    request.session["messages"] = f"{current_user.username} вышел"
     response = responses.RedirectResponse(url_redirect, status_code=status.HTTP_302_FOUND)
     await delete_token_to_cookies(response)
     return response
@@ -198,12 +201,15 @@ async def web_all_request_weather(
     :return: список запросов
     """
 
+    url_redirect = web_router.url_path_for("get_weather_web")
     if not current_user:
-        url_redirect = web_router.url_path_for("get_weather_web")
         request.session["messages"] = "историю запросов могут смотреть только авторизованные пользователи"
         return responses.RedirectResponse(url_redirect, status_code=status.HTTP_302_FOUND)
     flag = "all_request"
     results = await all_requests_weathers(current_user, db_session)
+    if "message" in results:
+        request.session["messages"] = results.get("message")
+        return responses.RedirectResponse(url_redirect, status_code=status.HTTP_302_FOUND)
     weather_list = await get_weather_list(results.get("data"))
     return templates.TemplateResponse(
         "all_request_weather.html", status_code=status.HTTP_200_OK, context={
