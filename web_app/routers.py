@@ -1,6 +1,6 @@
 from app_database.connect_database import get_async_session
 from app_database.utils import object_exists_from_database
-from app_database.models import User
+from app_database.models import User, RequestHistory
 from user.schemas import UserRegisterScheme, UserLoginScheme
 from user.current_user import get_current_user
 from fastapi import APIRouter, Request, status, HTTPException, Depends, responses
@@ -12,21 +12,27 @@ from weather._weather import return_weather
 from weather.utils import all_requests_weathers
 from web_app.forms import model_fields_for_the_form
 from web_app.csrf_token import generate_csrf_token, verify_csrf_token
-from web_app.web_utils import valid_form, templates_error
+from web_app.web_utils import valid_form, templates_error, get_weather_list, format_time
 from passlib.hash import pbkdf2_sha256
 from user.get_token import write_token_to_cookie, delete_token_to_cookies
 
 web_router = APIRouter(include_in_schema=False)
 
 templates = Jinja2Templates(directory="web_app/templates")
+env = templates.env  # доступ к окружению jinja
+
+env.filters["format_time"] = format_time  # регистрация фильтра в настройках окружения jinja
 
 
 @web_router.api_route("/", methods=["GET", "POST"])
-async def get_weather_web(request: Request, current_user=Depends(get_current_user)):
+async def get_weather_web(
+        request: Request, current_user=Depends(get_current_user), db_session: AsyncSession = Depends(get_async_session)
+):
     """
     Получение прогноза погоды
     :param request: текущий HTTP запрос
     :param current_user: текущий пользователь
+    :param db_session: асинхронная сессия для подключения к базе данных
     :return: если метод get то рендерит html-форму,
     если методом post то рендерит html-форму и возвращает информацию о погоде,
     если csrf_token не прошел проверку то рендерит страницу с ошибкой
@@ -54,12 +60,18 @@ async def get_weather_web(request: Request, current_user=Depends(get_current_use
                 }
             )
         csrf_token = await generate_csrf_token(request)  # генерирует новый csrf-токен
-        return templates.TemplateResponse(
+        response = templates.TemplateResponse(
             "index.html", status_code=status.HTTP_200_OK, context={
                 "request": request, "results": results, "form": form, "csrf_token": csrf_token,
-                "current_user": current_user
+                "current_user": current_user, "city": form_data.get("city")
             }
         )
+        if current_user and "error" not in results:
+            new_data = RequestHistory(city=form_data.get("city"), weather=str(results), user_id=current_user.id)
+            db_session.add(new_data)
+            await db_session.commit()
+
+        return response
 
 
 @web_router.api_route("/user-register", methods=["GET", "POST"])
@@ -188,13 +200,14 @@ async def web_all_request_weather(
 
     if not current_user:
         url_redirect = web_router.url_path_for("get_weather_web")
-        request.session["message"] = ["историю запросов могут смотреть только авторизованные пользователи"]
+        request.session["messages"] = "историю запросов могут смотреть только авторизованные пользователи"
         return responses.RedirectResponse(url_redirect, status_code=status.HTTP_302_FOUND)
     flag = "all_request"
     results = await all_requests_weathers(current_user, db_session)
-
+    weather_list = await get_weather_list(results.get("data"))
     return templates.TemplateResponse(
         "all_request_weather.html", status_code=status.HTTP_200_OK, context={
-            "request": request, "flag": flag, "results": results.get("data"), "current_user": current_user
+            "request": request, "flag": flag, "results": results.get("data"), "current_user": current_user,
+            "weather_list": weather_list
         }
     )
