@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block content %}
+    {% if flag == "login" %}
+        <h1 class="text-center mt-5">Авторизация пользователя</h1>
+    {% else %}
+        <h1 class="text-center mt-5">Регистрация пользователя</h1>
+    {% endif %}
+    {% if error_list %}
+        {% for error in error_list %}
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <strong>{{ error }}</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"
+                        aria-label="Закрыть"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+    {% include "_inc/_forms.html" %}
+{% endblock %}
+
