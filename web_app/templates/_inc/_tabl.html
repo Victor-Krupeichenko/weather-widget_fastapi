@@ -1,0 +1,17 @@
+<table class="table table-hover text-center mt-3">
+    <thead>
+    <tr>
+        <th scope="col">Температура</th>
+        <th scope="col">Состояние погоды</th>
+        <th scope="col">Атмосферное давление</th>
+        <th scope="col">Скорость Ветра</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        {% for result in results %}
+            <td>{{ results[result] }}</td>
+        {% endfor %}
+    </tr>
+    </tbody>
+</table>
