@@ -69,5 +69,7 @@ async def user_logout(response: Response, current_user=Depends(get_current_user)
     :param current_user: текущий пользователь
     :return: сообщение для пользователя, что он вышел
     """
-    response.delete_cookie(key=name_cookies)
-    return {"message": f"пользователь {current_user.username} вышел"}
+    if current_user:
+        response.delete_cookie(key=name_cookies)
+        return {"message": f"пользователь {current_user.username} вышел"}
+    return {"message": "чтобы выйти нужно сначала авторизоваться"}
