@@ -1,5 +1,12 @@
 # weather-widget_fastapi
 ![Python](https://img.shields.io/badge/-Python-f1f518?style=flat-square&logo=python)
+![FastAPI](https://img.shields.io/badge/-FastAPI-74cf3c?style=flat-square&logo=fastapi)
+![Docker](https://img.shields.io/badge/-Docker-1de4f2?style=flat-square&logo=docker)
+![Postgresql](https://img.shields.io/badge/-Postgresql-1de4f2?style=flat-square&logo=postgresql)  
+![SQLAlchemy](https://img.shields.io/badge/-SQLAlchemy-ba7378?style=flat-square&logo=sqlalchemy)
+![Alembic](https://img.shields.io/badge/-Alembic-80cced?style=flat-square&logo=Alembic)
+![Pydantic](https://img.shields.io/badge/-Pydantic-E92063?style=flat-square&logo=Pydantic)
+![Bootstrap](https://img.shields.io/badge/-Bootstrap-ce62f5?style=flat-square&logo=bootstrap)
 
 Приложение для получения текущей погоды в конкретно указанном городе.
 Приложение написано на Fast API
