@@ -1,5 +1,6 @@
 # weather-widget_fastapi
 ![Python](https://img.shields.io/badge/-Python-f1f518?style=flat-square&logo=python)
+
 Приложение для получения текущей погоды в конкретно указанном городе.
 Приложение написано на Fast API
 Приложение состоит из отдельных трех частей:
