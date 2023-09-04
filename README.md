@@ -7,6 +7,7 @@
 ![Pydantic](https://img.shields.io/badge/-Pydantic-E92063?style=flat-square&logo=Pydantic)
 ![Bootstrap](https://img.shields.io/badge/-Bootstrap-ce62f5?style=flat-square&logo=bootstrap)
 ![Docker](https://img.shields.io/badge/-Docker-1de4f2?style=flat-square&logo=docker)
+![Git](https://img.shields.io/badge/-Git-COLOR?style=flat-square&logo=git)
 
 Приложение для получения текущей погоды в конкретно указанном городе.
 Приложение написано на Fast API
